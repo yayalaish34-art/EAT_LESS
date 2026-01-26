@@ -15,8 +15,6 @@ app.use(
   })
 );
 
-// ✅ make sure preflight always works
-app.options("*", cors());
 
 app.use(express.json());
 
