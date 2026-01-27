@@ -37,29 +37,18 @@ function pickNutrients(nutriments = {}) {
   return result;
 }
 
-function extractJsonFromResponsesApi(respJson) {
-  // Most reliable: use output_text if present
-  if (typeof respJson?.output_text === "string" && respJson.output_text.trim()) {
-    return JSON.parse(respJson.output_text);
+function extractJsonFromChatCompletions(respJson) {
+  const content = respJson?.choices?.[0]?.message?.content;
+  if (!content || typeof content !== "string") {
+    throw new Error("Missing content from OpenAI");
   }
 
-  // Fallback: try to find a message output with text
-  const outputs = Array.isArray(respJson?.output) ? respJson.output : [];
-  for (const item of outputs) {
-    if (item?.type === "message") {
-      const content = Array.isArray(item?.content) ? item.content : [];
-      for (const c of content) {
-        if (c?.type === "output_text" && typeof c?.text === "string") {
-          return JSON.parse(c.text);
-        }
-        if (c?.type === "text" && typeof c?.text === "string") {
-          return JSON.parse(c.text);
-        }
-      }
-    }
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    console.error("Raw OpenAI content:", content);
+    throw new Error("Invalid JSON returned from AI");
   }
-
-  throw new Error("Could not extract JSON from Responses API response");
 }
 
 app.post("/barcode", async (req, res) => {
@@ -207,7 +196,7 @@ OUTPUT (STRICT JSON ONLY )
   ]
 }`; // השאר את הפרומפט שלך כמו שהוא
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.API_OPENAI}`,
@@ -215,12 +204,12 @@ OUTPUT (STRICT JSON ONLY )
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        input: [
+        messages: [
           { role: "system", content: systemInstruction },
           { role: "user", content: JSON.stringify(payload) },
         ],
         // Better for Responses API:
-        text: { format: { type: "json_object" } },
+        response_format: { type: "json_object" },
       }),
     });
 
