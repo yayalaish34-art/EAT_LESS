@@ -215,7 +215,7 @@ OUTPUT (STRICT JSON ONLY )
 
     if (!response.ok) {
       const errText = await response.text();
-      return res.status(503).json({ error: "OpenAI error", detail: errText });
+      return res.status(response.status).json({ error: "OpenAI error", detail: errText });
     }
 
     const respJson = await response.json();
