@@ -66,6 +66,7 @@ app.post("/barcode", async (req, res) => {
       nutriscore_grade: p.nutriscore_grade || null,
       nutriments: nutri_filter || {},
       ingredients: filter || [],
+      image: p.image_front_url,
     });
   } catch (err) {
     console.error(err);
