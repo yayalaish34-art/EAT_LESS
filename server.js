@@ -3,10 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 dotenv.config();
-
 const app = express();
 
-// ✅ CORS open to all
 app.use(
   cors({
     origin: "*",
@@ -15,7 +13,6 @@ app.use(
   })
 );
 
-
 app.use(express.json());
 
 function ultraSlimIngredients(product) {
@@ -23,7 +20,8 @@ function ultraSlimIngredients(product) {
   return arr
     .map((ing) => {
       const id = ing?.id;
-      const p = typeof ing?.percent_estimate === "number" ? ing.percent_estimate : null;
+      const p =
+        typeof ing?.percent_estimate === "number" ? ing.percent_estimate : null;
       if (!id) return null;
       return p === null ? id : `${id}:${p}`;
     })
@@ -39,9 +37,39 @@ function pickNutrients(nutriments = {}) {
   return result;
 }
 
+function extractJsonFromResponsesApi(respJson) {
+  // Most reliable: use output_text if present
+  if (typeof respJson?.output_text === "string" && respJson.output_text.trim()) {
+    return JSON.parse(respJson.output_text);
+  }
+
+  // Fallback: try to find a message output with text
+  const outputs = Array.isArray(respJson?.output) ? respJson.output : [];
+  for (const item of outputs) {
+    if (item?.type === "message") {
+      const content = Array.isArray(item?.content) ? item.content : [];
+      for (const c of content) {
+        if (c?.type === "output_text" && typeof c?.text === "string") {
+          return JSON.parse(c.text);
+        }
+        if (c?.type === "text" && typeof c?.text === "string") {
+          return JSON.parse(c.text);
+        }
+      }
+    }
+  }
+
+  throw new Error("Could not extract JSON from Responses API response");
+}
+
 app.post("/barcode", async (req, res) => {
   try {
-    const { barcode } = req.body;
+    const { requestBody } = req.body || {};
+    const barcode = requestBody?.barcode;
+    const children = requestBody?.children; // age(s)
+    const allergies = requestBody?.allergies ?? "none";
+    const goal = requestBody?.goal ?? null;
+
     if (!barcode) return res.status(400).json({ error: "barcode is required" });
 
     const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
@@ -52,73 +80,136 @@ app.post("/barcode", async (req, res) => {
 
     if (!r.ok) return res.status(502).json({ error: "OpenFoodFacts error" });
 
-    const data = await r.json();
-    if (data.status !== 1 || !data.product) return res.status(404).json({ error: "Product not found" });
+    const data1 = await r.json();
+    if (data1?.status !== 1 || !data1?.product)
+      return res.status(404).json({ error: "Product not found" });
 
-    const p = data.product;
+    const p = data1.product;
 
-    // ✅ FIX: declare variables properly, and pass the whole product
-    const filter = ultraSlimIngredients(p);
-    const nutri_filter = pickNutrients(p.nutriments);
+    const ingredients = ultraSlimIngredients(p);
+    const nutrients = pickNutrients(p.nutriments);
 
-    res.json({
-      product_name_en: p.product_name_en || p.product_name || null,
-      nutriscore_grade: p.nutriscore_grade || null,
-      nutriments: nutri_filter || {},
-      ingredients: filter || [],
-      image: p.image_front_url,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+    const payload = {
+      ingredients,
+      nutri_score: p.nutriscore_grade ?? null,
+      nutrient_levels: p.nutrient_levels ?? null, // אם אתה רוצה “nutri level” אמיתי מ-OFF
+      children_age: children ?? null,
+      allergies,
+      goal,
+    };
 
-app.post("/summary", async (req, res) => {
-  try {
-    const systemInstruction = `You evaluate food products for a consumer app.
-Your goal is NOT to classify food by type, but to decide whether a product is something the body would be better off limiting as much as possible.
-Do not rely on food categories.
-Do not assume something is okay because it is common.
+    const systemInstruction = `You evaluate food products for a child-focused app (ages 1–13).
 
-CORE QUESTION (MANDATORY)
-Is this something I should limit as much as possible?
+Your goal is to help parents understand how often a product fits
+into a child’s everyday eating and development.
+Focus on habits, taste, satiety, and routine.
+Do NOT use calorie or diet language.
+Do NOT judge parents.
 
+---
+INPUT YOU WILL RECEIVE
+- Ingredients with percentages
+- Nutri-Score (A–E)
+- Allergies list (or "none")
+- age of the child
+
+---
+CORE QUESTION
+How often does this product fit into a child’s eating?
+
+---
 NUTRI-SCORE OVERRIDE (MANDATORY)
-You will receive a Nutri-Score (A, B, C, D, or E).
 
-This score OVERRIDES all reasoning.
-You MUST choose the verdict exactly as follows:
-- Nutri-Score A, B or C → "No real concern"
-- Nutri-Score D → "Worth limiting"
-- Nutri-Score E → "Best kept rare"
+You MUST apply the Nutri-Score as follows:
 
-No alternative verdict is allowed.
+- Nutri-Score A → verdict MUST be "Good for everyday"
+- Nutri-Score C, D, or E → YOU choose between:
+  "Good for everyday" / "Okay sometimes" / "Best kept rare"
 
-INSIGHTS RULE (CRITICAL)
-You will be provided ingredients with percentages and the Nutri-Score.
-The verdict is locked by the Nutri-Score.
-The 4 insights MUST support that verdict.
+The Nutri-Score has priority over all other reasoning.
 
-You MUST NOT:
-- Say "No real concern" and then describe the product as unhealthy
-- Contradict the verdict in any way
-- Soften or override the Nutri-Score decision
+---
+age of the children (CRITICAL)
 
-OUTPUT FORMAT (STRICT JSON ONLY)
-Return ONLY valid JSON. No extra text.
+You will receive the age of the child or children.
+You MUST take the age into account in your explanations
+and clearly reference age relevance when appropriate.
+
+ALLERGY RULE (CRITICAL)
+
+If the allergies field is NOT "none":
+You MUST clearly state at the VERY BEGINNING
+that the product CONTAINS the specified allergen(s).
+
+This notice must appear before any other content.
+
+---
+VERDICT OPTIONS (ONLY THESE)
+- "Good for everyday"
+- "Okay sometimes"
+- "Best kept rare"
+
+---
+STRUCTURE RULE (MANDATORY)
+
+Return EXACTLY 3 sections.
+The content MUST change based on the verdict.
+
+---
+IF verdict = "Good for everyday"
+
+1️. ✅ What’s in it  
+Explain what the child is mostly getting (simple, real food focus).
+
+2. 🧠 Why this works for children  
+Explain satiety, steady energy, or habit support.
+
+3️. 📊 Clear summary  
+One short sentence explaining why this fits daily eating.
+
+---
+IF verdict = "Okay sometimes"
+
+ 1️. ✅ What’s fine about it  
+Highlight what’s acceptable and why it’s okay to enjoy occasionally.
+
+2. 🕒 Why this is better sometimes  
+Briefly explain why it’s not ideal as a daily choice but still good to consume,
+in a calm, non-judgmental way.
+
+3️. 📊 Clear summary  
+One short sentence explaining when it fits.
+
+---
+IF verdict = "Best kept rare"
+
+1️. 🔍 What’s not the main issue  
+Acknowledge what looks fine or acceptable.
+
+2. ⚠️ Main issues for children  
+Explain the key reasons this is unsuitable for regular use.
+3️.📊 Clear summary  
+One clear sentence explaining why this should be rare.
+---
+
+LANGUAGE RULES
+- Always refer to children / your child
+- No medical claims
+- No scare language
+- No nutrition scores mentioned
+- No contradictions
+---
+
+OUTPUT (STRICT JSON ONLY )
 
 {
-  "verdict": "No real concern | Worth limiting | Best kept rare",
-  "insights": [
-    "What this product mostly is",
-    "What (if anything) balances it",
-    "The recognizable consumption pattern",
-    "Why regular use would or wouldn’t be an issue"
+  "verdict": "Good for everyday | Okay sometimes | Best kept rare",
+  "sections": [
+    { "title": "...", "text": "..." },
+    { "title": "...", "text": "..." },
+    { "title": " Clear summary", "text": "..." }
   ]
-}
-;
-`; // השאר כמו שיש לך
+}`; // השאר את הפרומפט שלך כמו שהוא
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -130,20 +221,38 @@ Return ONLY valid JSON. No extra text.
         model: "gpt-4o-mini",
         input: [
           { role: "system", content: systemInstruction },
-          { role: "user", content: JSON.stringify(req.body) },
+          { role: "user", content: JSON.stringify(payload) },
         ],
-        response_format: { type: "json_object" },
+        // Better for Responses API:
+        text: { format: { type: "json_object" } },
       }),
     });
 
-    const data = await response.json();
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(502).json({ error: "OpenAI error", detail: errText });
+    }
 
-    // ✅ better: return parsed JSON, not a string
-    res.json(JSON.parse(data.output_text));
+    const respJson = await response.json();
+    const llm = extractJsonFromResponsesApi(respJson);
+
+    res.json({
+      product_name_en: p.product_name_en || p.product_name || null,
+      verdict: llm.verdict,
+      sections: llm.sections,
+      image: p.image_front_url || p.image_url || null,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Server error", detail: String(err?.message || err) });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+
+
+
+
+
