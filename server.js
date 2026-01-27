@@ -64,11 +64,7 @@ function extractJsonFromResponsesApi(respJson) {
 
 app.post("/barcode", async (req, res) => {
   try {
-    const { requestBody } = req.body || {};
-    const barcode = requestBody?.barcode;
-    const children = requestBody?.children; // age(s)
-    const allergies = requestBody?.allergies ?? "none";
-    const goal = requestBody?.goal ?? null;
+  const { barcode, children, allergies = "none", goal = null } = req.body;
 
     if (!barcode) return res.status(400).json({ error: "barcode is required" });
 
