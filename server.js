@@ -37,7 +37,7 @@ function pickNutrients(nutriments = {}) {
   return result;
 }
 
-function extractJsonFromChatCompletions(respJson) {
+function extractJsonFromResponsesApi(respJson) {
   const content = respJson?.choices?.[0]?.message?.content;
   if (!content || typeof content !== "string") {
     throw new Error("Missing content from OpenAI");
@@ -215,7 +215,7 @@ OUTPUT (STRICT JSON ONLY )
 
     if (!response.ok) {
       const errText = await response.text();
-      return res.status(502).json({ error: "OpenAI error", detail: errText });
+      return res.status(503).json({ error: "OpenAI error", detail: errText });
     }
 
     const respJson = await response.json();
