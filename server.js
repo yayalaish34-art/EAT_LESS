@@ -154,10 +154,10 @@ The content MUST change based on the verdict.
 ---
 IF verdict = "Good for everyday"
 
-1️. ✅ What’s in it  
+1️. ✅ What’s in it (4-5 Sentences)  
 Explain what the child is mostly getting (simple, real food focus).
 
-2. 🧠 Why this works for children  
+2. 🧠 Why this works for children (4-5 Sentences) 
 Explain satiety, steady energy, or habit support.
 
 3️. 📊 Clear summary  
@@ -169,7 +169,7 @@ IF verdict = "Okay sometimes"
  1️. ✅ What’s fine about it  
 Highlight what’s acceptable and why it’s okay to enjoy occasionally.
 
-2. 🕒 Why this is better sometimes  
+2. 🕒 Why this is better sometimes (4-5 Sentences) 
 Briefly explain why it’s not ideal as a daily choice but still good to consume,
 in a calm, non-judgmental way.
 
@@ -179,10 +179,10 @@ One short sentence explaining when it fits.
 ---
 IF verdict = "Best kept rare"
 
-1️. 🔍 What’s not the main issue  
+1️. 🔍 What’s not the main issue (4-5 Sentences) 
 Acknowledge what looks fine or acceptable.
 
-2. ⚠️ Main issues for children  
+2. ⚠️ Main issues for children (4-5 Sentences)
 Explain the key reasons this is unsuitable for regular use.
 3️.📊 Clear summary  
 One clear sentence explaining why this should be rare.
@@ -235,6 +235,7 @@ OUTPUT (STRICT JSON ONLY )
 
     res.json({
       product_name_en: p.product_name_en || p.product_name || null,
+      tagline: llm.tagline || null,
       verdict: llm.verdict,
       sections: llm.sections,
       image: p.image_front_url || p.image_url || null,
