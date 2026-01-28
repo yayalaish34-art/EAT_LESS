@@ -75,6 +75,7 @@ app.post("/barcode", async (req, res) => {
     const nutrients = pickNutrients(p.nutriments);
 
     const payload = {
+      product: p.product_name_en,
       ingredients,
       nutri_score: p.nutriscore_grade ?? null,
       nutrient_levels: p.nutrient_levels ?? null, // אם אתה רוצה “nutri level” אמיתי מ-OFF
@@ -98,6 +99,16 @@ INPUT YOU WILL RECEIVE
 - Allergies list (or "none")
 - age of the child
 
+---
+Return an additional field: tagline
+Type: string
+
+Rules: 3–7 words, lowercase/clean, no brand names, no emojis, no period.
+
+Examples:
+"sweetener-rich, low-calorie cola"
+"high-protein caramel pudding"
+"ultra-salty refined wheat snack"
 ---
 CORE QUESTION
 How often does this product fit into a child’s eating?
@@ -188,6 +199,7 @@ LANGUAGE RULES
 OUTPUT (STRICT JSON ONLY )
 
 {
+"tagline": "string",
   "verdict": "Good for everyday | Okay sometimes | Best kept rare",
   "sections": [
     { "title": "...", "text": "..." },
