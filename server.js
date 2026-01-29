@@ -19,14 +19,19 @@ function ultraSlimIngredients(product) {
   const arr = Array.isArray(product?.ingredients) ? product.ingredients : [];
   return arr
     .map((ing) => {
-      const id = ing?.id;
+      const rawId = ing?.id;
       const p =
         typeof ing?.percent_estimate === "number" ? ing.percent_estimate : null;
-      if (!id) return null;
+      if (!rawId) return null;
+
+      // remove language prefix like "en:"
+      const id = String(rawId).replace(/^[a-z]{2}:/i, "");
+
       return p === null ? id : `${id}:${p}`;
     })
     .filter(Boolean);
 }
+
 
 function pickNutrients(nutriments = {}) {
   const keys = ["added-sugars_100g", "proteins_100g", "fiber_100g", "fat_100g"];
@@ -154,15 +159,14 @@ The content MUST change based on the verdict.
 ---
 IF verdict = "Good for everyday"
 
-1️. ✅ What’s in it (4-5 Sentences)  
+1️. ✅ What’s in it (3-4 Sentences)  
 Explain what the child is mostly getting (simple, real food focus).
 
-2. 🧠 Why this works for children (4-5 Sentences) 
+2. 🧠 Why this works for children (3-4 Sentences) 
 Explain satiety, steady energy, or habit support.
 
 3️. 📊 Clear summary  
 One short sentence explaining why this fits daily eating.
-
 ---
 IF verdict = "Okay sometimes"
 
@@ -175,25 +179,63 @@ in a calm, non-judgmental way.
 
 3️. 📊 Clear summary  
 One short sentence explaining when it fits.
-
 ---
 IF verdict = "Best kept rare"
 
-1️. 🔍 What’s not the main issue (4-5 Sentences) 
+1️.What’s not the main issue (4-5 Sentences) 
 Acknowledge what looks fine or acceptable.
 
-2. ⚠️ Main issues for children (4-5 Sentences)
+2. Main issues for children (4-5 Sentences)
 Explain the key reasons this is unsuitable for regular use.
-3️.📊 Clear summary  
+3️.Clear summary  
 One clear sentence explaining why this should be rare.
 ---
 
+NEW: INGREDIENT MARKING (MANDATORY)
+
+You MUST return a field called "ingredients_marked".
+
+Input ingredients come in an array and MUST be preserved in the SAME ORDER.
+
+"ingredients_marked" must be an array of strings, same length and same order as input.
+
+For each ingredient string:
+- If it is a key driver issue for children in this product → prefix it with "!"
+- Otherwise → prefix it with "-"
+
+VERDICT-DEPENDENT RULES (CRITICAL):
+- If verdict = "Good for everyday":
+  - ALL items MUST start with "-"
+  - You MUST NOT use "!" at all.
+
+- If verdict = "Okay sometimes":
+  - You MUST use "!" on ONLY 1–2 items total (choose the most relevant ones).
+  - All other items MUST start with "-".
+  - Do NOT over-flag.
+
+- If verdict = "Best kept rare":
+  - You SHOULD use "!" on a small set of the most important drivers (typically 2–6),
+    but do NOT mark everything.
+  - All remaining items MUST start with "-".
+
+Rules:
+- After the prefix ("!" or "-"), return ONLY the ingredient name.
+- Remove any percentage or numeric value.
+- Keep the original ingredient order exactly as in the input.
+- Do NOT add any extra text.
+
+Examples:
+"!sugar"
+"-wheat-flour"
+"-yeast-extract"
+  ---
 LANGUAGE RULES
-- Always refer to children / your child
+- Always frame guidance from a parent-first perspective, with the child in mind.
 - No medical claims
 - No scare language
 - No nutrition scores mentioned
 - No contradictions
+- Dont use any number (e.g 1. or 2.) before a section!
 ---
 
 OUTPUT (STRICT JSON ONLY )
@@ -201,6 +243,7 @@ OUTPUT (STRICT JSON ONLY )
 {
 "tagline": "string",
   "verdict": "Good for everyday | Okay sometimes | Best kept rare",
+  "ingredients_marked": ["string"],
   "sections": [
     { "title": "...", "text": "..." },
     { "title": "...", "text": "..." },
