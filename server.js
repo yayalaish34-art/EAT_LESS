@@ -277,6 +277,7 @@ OUTPUT (STRICT JSON ONLY )
     const llm = extractJsonFromResponsesApi(respJson);
 
     res.json({
+      ingredients_marked : llm.ingredients_marked,
       product_name_en: p.product_name_en || p.product_name || null,
       tagline: llm.tagline || null,
       verdict: llm.verdict,
