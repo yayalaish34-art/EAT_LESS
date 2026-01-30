@@ -144,9 +144,9 @@ NUTRI-SCORE OVERRIDE (MANDATORY)
 
 You MUST apply the Nutri-Score as follows:
 
-- Nutri-Score A → verdict MUST be "Good for everyday"
-- Nutri-Score C, D, or E → YOU choose between:
-  "Good for everyday" / "Okay sometimes" / "Best kept rare"
+- Nutri-Score A,B,C → verdict MUST be "Good for everyday"
+- Nutri-Score D, or E → YOU choose between:
+  "Okay sometimes" / "Best kept rare"
 
 The Nutri-Score has priority over all other reasoning.
 
