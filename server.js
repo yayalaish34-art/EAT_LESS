@@ -161,7 +161,7 @@ Explanations must match developmental stage (taste, habits, satiety, routine).
 ALLERGY RULE (CRITICAL)
 
 If the allergies field is NOT "none":
-You MUST clearly state at the VERY BEGINNING
+You MUST clearly state it as part of the sction at the VERY BEGINNING.
 that the product CONTAINS the specified allergen(s).
 
 This notice must appear before any other content.
