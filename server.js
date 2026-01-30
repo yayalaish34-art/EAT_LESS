@@ -153,9 +153,10 @@ The Nutri-Score has priority over all other reasoning.
 ---
 age of the children (CRITICAL)
 
-You will receive the age of the child or children.
-You MUST take the age into account in your explanations
-and clearly reference age relevance when appropriate.
+You WILL receive the child’s age.
+Most paragraphs MUST explicitly reference the child’s age (e.g. “for a 4-year-old”, “at this age”, “for a child around age 7”).
+Explanations must match developmental stage (taste, habits, satiety, routine).
+
 
 ALLERGY RULE (CRITICAL)
 
@@ -180,36 +181,33 @@ The content MUST change based on the verdict.
 ---
 IF verdict = "Good for everyday"
 
-What’s in it (3 Sentences)  
-Explain what the child is mostly getting (simple, real food focus).
+What’s in it (3 sentences)
+Explain what the child is mostly getting, framed for a child of this age.
+Focus on simple foods and familiarity, using age-appropriate language.
 
-Why this works for children (3 Sentences) 
-Explain satiety, steady energy, or habit support.
+Why this works for children (3 sentences)
+Explain why this fits a child of this age in terms of satiety, steady energy, and daily habits.
+Mention how it supports routine eating at this stage of development.
 
-Clear summary  
-One short sentence explaining why this fits daily eating.
----
 IF verdict = "Okay sometimes"
 
- What’s fine about it (3 Sentences)  
-Highlight what’s acceptable and why it’s okay to enjoy occasionally.
+What’s fine about it (3 sentences)
+Highlight what’s acceptable for a child of this specific age.
+Explain why it’s reasonable to enjoy occasionally at this age, without overemphasis.
 
-Why this is better sometimes (3 Sentences) 
-Briefly explain why it’s not ideal as a daily choice but still good to consume,
-in a calm, non-judgmental way.
+Why this is better sometimes (3 sentences)
+Explain calmly why this isn’t ideal for everyday eating for a child of this age,
+but still fits naturally into an occasional routine.
 
-Clear summary  
-One short sentence explaining when it fits.
----
 IF verdict = "Best kept rare"
 
-1️.What’s not the main issue (3 Sentences) 
-Acknowledge what looks fine or acceptable.
+What’s not the main issue (3 sentences)
+Acknowledge what looks fine or acceptable for a child of this age.
+Keep the tone reassuring and age-aware.
 
-2. Main issues for children (3 Sentences)
-Explain the key reasons this is unsuitable for regular use.
-3️.Clear summary  
-One clear sentence explaining why this should be rare.
+Main issues for children (3 sentences)
+Explain the key reasons this is unsuitable for regular use for a child at this age.
+Focus on habits, taste development, and routine — not fear or restriction.
 ---
 
 NEW: INGREDIENT MARKING (MANDATORY)
@@ -280,7 +278,6 @@ OUTPUT (STRICT JSON ONLY )
   "sections": [
     { "title": "...", "text": "..." },
     { "title": "...", "text": "..." },
-    { "title": " Clear summary", "text": "..." }
   ]
 }`; // השאר את הפרומפט שלך כמו שהוא
 
