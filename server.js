@@ -32,14 +32,36 @@ function ultraSlimIngredients(product) {
     .filter(Boolean);
 }
 
+function normalizeIngredientTokens(tokens) {
+  return (Array.isArray(tokens) ? tokens : []).map((t) => {
+    const s = String(t ?? "");
 
-function pickNutrients(nutriments = {}) {
-  const keys = ["added-sugars_100g", "proteins_100g", "fiber_100g", "fat_100g"];
-  const result = {};
-  for (const key of keys) {
-    if (typeof nutriments[key] === "number") result[key] = nutriments[key];
-  }
-  return result;
+    // keep the first char if it's "!" or "-"
+    const prefix = s[0] === "!" || s[0] === "-" ? s[0] : "";
+    const rest = prefix ? s.slice(1) : s;
+
+    // replace internal hyphens with spaces, collapse spaces, keep order
+    const normalized = rest.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+
+    return prefix + normalized;
+  });
+}
+function normalizeIngredients(ingredientsText) {
+  if (!ingredientsText || typeof ingredientsText !== "string") return [];
+
+  return ingredientsText
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => {
+      // אם יש prefix כמו "emulsifier:"
+      const parts = item.split(":");
+      return parts.length > 1 ? parts.slice(1).join(":").trim() : item;
+    })
+    .filter(item => {
+      // מסנן הצהרות כמו "contains:"
+      return !item.toLowerCase().includes("minimum");
+    });
 }
 
 function extractJsonFromResponsesApi(respJson) {
@@ -76,8 +98,7 @@ app.post("/barcode", async (req, res) => {
 
     const p = data1.product;
 
-    const ingredients = ultraSlimIngredients(p);
-    const nutrients = pickNutrients(p.nutriments);
+    const ingredients = normalizeIngredients(p.ingredients_text);
 
     const payload = {
       product: p.product_name_en,
@@ -99,7 +120,7 @@ Do NOT judge parents.
 
 ---
 INPUT YOU WILL RECEIVE
-- Ingredients with percentages
+- Ingredients
 - Nutri-Score (A–E)
 - Allergies list (or "none")
 - age of the child
@@ -193,15 +214,27 @@ One clear sentence explaining why this should be rare.
 
 NEW: INGREDIENT MARKING (MANDATORY)
 
+2. Rules:
+-Always return ingredient names in English, regardless of the input language.
+- Return an ARRAY of ingredient names, in the SAME ORDER as they appear.
+- Split combined ingredients into separate items when clearly listed (e.g. "vegetable oils (palm, rapeseed)" → "Palm oil", "Rapeseed oil").
+- If an ingredient category contains sub-ingredients in parentheses, extract the sub-ingredients only.
+- Remove percentages, quantities, and numbers.
+- Remove allergen emphasis (capital letters).
+- Ignore regulatory statements such as "may contain", "possible traces of", or similar.
+- Do NOT include allergen warnings or trace statements in the output.
+- Keep names short, human-friendly, and suitable for UI chips (2–4 words max).
+- Preserve the original meaning of each ingredient.
+- Output ONLY a JSON array of strings. No explanations.
+
+
 You MUST return a field called "ingredients_marked".
 
-Input ingredients come in an array and MUST be preserved in the SAME ORDER.
-
-"ingredients_marked" must be an array of strings, same length and same order as input.
-
+2.
 For each ingredient string:
 - If it is a key driver issue for children in this product → prefix it with "!"
 - Otherwise → prefix it with "-"
+-If an ingredient matches the allergy input, it MUST be prefixed with "!" regardless of verdict rules.
 
 VERDICT-DEPENDENT RULES (CRITICAL):
 - If verdict = "Good for everyday":
@@ -214,7 +247,7 @@ VERDICT-DEPENDENT RULES (CRITICAL):
   - Do NOT over-flag.
 
 - If verdict = "Best kept rare":
-  - You SHOULD use "!" on a small set of the most important drivers (typically 2–6),
+  - You SHOULD use "!" on a small set of the most important drivers (typically 1-3),
     but do NOT mark everything.
   - All remaining items MUST start with "-".
 
@@ -275,9 +308,10 @@ OUTPUT (STRICT JSON ONLY )
 
     const respJson = await response.json();
     const llm = extractJsonFromResponsesApi(respJson);
+    const ingredients_final_mark = normalizeIngredientTokens(llm.ingredients_marked);
 
     res.json({
-      ingredients_marked : llm.ingredients_marked,
+      ingredients_marked : ingredients_final_mark,
       product_name_en: p.product_name_en || p.product_name || null,
       tagline: llm.tagline || null,
       verdict: llm.verdict,
