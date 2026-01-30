@@ -180,25 +180,25 @@ The content MUST change based on the verdict.
 ---
 IF verdict = "Good for everyday"
 
-1️. ✅ What’s in it (3 Sentences)  
+What’s in it (3 Sentences)  
 Explain what the child is mostly getting (simple, real food focus).
 
-2. 🧠 Why this works for children (3 Sentences) 
+Why this works for children (3 Sentences) 
 Explain satiety, steady energy, or habit support.
 
-3️. 📊 Clear summary  
+Clear summary  
 One short sentence explaining why this fits daily eating.
 ---
 IF verdict = "Okay sometimes"
 
- 1️. ✅ What’s fine about it (3 Sentences)  
+ What’s fine about it (3 Sentences)  
 Highlight what’s acceptable and why it’s okay to enjoy occasionally.
 
-2. 🕒 Why this is better sometimes (3 Sentences) 
+Why this is better sometimes (3 Sentences) 
 Briefly explain why it’s not ideal as a daily choice but still good to consume,
 in a calm, non-judgmental way.
 
-3️. 📊 Clear summary  
+Clear summary  
 One short sentence explaining when it fits.
 ---
 IF verdict = "Best kept rare"
