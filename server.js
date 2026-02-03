@@ -154,7 +154,6 @@ The Nutri-Score has priority over all other reasoning.
 MOST IMPORTENT: HIGH-RISK INGREDIENT OVERRIDE (MANDATORY)
 
 If the ingredient list contains ANY of the following:
-- Partially Hydrogenated Oils
 - Sodium Benzoate or Potassium Benzoate
 - Artificial food colors (Red 40, Yellow 5, Yellow 6, Blue 1)
 - Caffeine, energy drinks, or protein/energy beverages intended as drinks
