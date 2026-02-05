@@ -110,7 +110,7 @@ app.post("/barcode", async (req, res) => {
       goal,
     };
 
-    const systemInstruction = `You evaluate food products for a child-focused app (ages 1–13).
+    const systemInstruction = `You evaluate food products for a child-focused app.
 
 Your goal is to help parents understand how often a product fits
 into a child’s everyday eating and development.
@@ -183,11 +183,14 @@ ONLY IF more than one child is provided:
 ---
 ALLERGY RULE (CRITICAL)
 
-If the allergies field is NOT "none":
-- You MUST clearly state, at the VERY BEGINNING of the FIRST section,
-  that the product CONTAINS the specified allergen(s).
-- This notice MUST be integrated into the first section’s text.
-- Do NOT present this as a separate warning section.
+IF the product contains an ingredient listed in the allergy field:
+
+- This override has the highest priority (overrides Nutri-Score and all other overrides
+- The verdict MUST be set to "Best kept rare"
+- The explanation MUST focus on suitability for this child, not general food quality
+- You MUST NOT describe the allergen as acceptable, familiar, or beneficial
+- Do NOT attribute developmental or habit-related issues to the allergen itself
+- Frame the explanation around avoidance and routine safety, not nutrition
 
 ---
 VERDICT OPTIONS (ONLY THESE)
@@ -198,7 +201,7 @@ VERDICT OPTIONS (ONLY THESE)
 ---
 STRUCTURE RULE (MANDATORY)
 
-Return EXACTLY 3 sections.
+Return EXACTLY 2 sections.
 The content MUST change based on the verdict.
 
 ---
