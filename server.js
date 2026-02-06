@@ -144,9 +144,18 @@ NUTRI-SCORE OVERRIDE (MANDATORY)
 
 You MUST apply the Nutri-Score as follows:
 
-- Nutri-Score A,B,C → verdict MUST be "Good for everyday"
-- Nutri-Score D, or E → YOU choose between:
-  "Okay sometimes" / "Best kept rare"
+- Nutri-Score A or B → verdict MUST be "Good for everyday"
+
+- Nutri-Score C → In MOST cases (around 70%),
+  verdict SHOULD be "Good for everyday".
+  Use "Okay sometimes" only if sugar, salt,
+  or additive load is noticeably high.
+
+- Nutri-Score D or E → verdict SHOULD lean toward
+  "Okay sometimes".
+  Use "Best kept rare" only when the product
+  is clearly unsuitable for frequent consumption,
+  especially for children.
 
 The Nutri-Score has priority over all other reasoning.
 
