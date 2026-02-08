@@ -146,18 +146,12 @@ You MUST apply the Nutri-Score as follows:
 
 - Nutri-Score A or B → verdict MUST be "Good for everyday"
 
-- Nutri-Score C → In MOST cases (around 70%),
-  verdict SHOULD be "Good for everyday".
-  Use "Okay sometimes" only if sugar, salt,
-  or additive load is noticeably high.
+- Nutri-Score C → verdict SHOULD be "Okay sometimes".
 
-- Nutri-Score D or E → verdict SHOULD lean toward
-  "Okay sometimes".
-  Use "Best kept rare" only when the product
-  is clearly unsuitable for frequent consumption,
-  especially for children.
 
-The Nutri-Score has priority over all other reasoning.
+- Nutri-Score D or E → Use "Best kept rare" 
+
+The Nutri-Score has priority over all other reasoning but below allergies & HIGH-RISK INGREDIENT.
 
 ---
 MOST IMPORTENT: HIGH-RISK INGREDIENT OVERRIDE (MANDATORY)
@@ -165,8 +159,11 @@ MOST IMPORTENT: HIGH-RISK INGREDIENT OVERRIDE (MANDATORY)
 If the ingredient list contains ANY of the following:
 - Sodium Benzoate or Potassium Benzoate
 - Artificial food colors (Red 40, Yellow 5, Yellow 6, Blue 1)
-- Caffeine, energy drinks, or protein/energy beverages intended as drinks
-- Added Sugar (including corn syrup, glucose syrup, fructose syrup)
+- Artificial sweeteners (Aspartame, Sucralose, Acesulfame-K) in products marketed to children
+- Sodium Nitrite or Sodium Nitrate
+- Hydrogenated or partially hydrogenated oils
+- Caffeine or stimulant compounds (e.g. guarana, taurine)
+- Added Sugar listed among the first ingredients
 
 THEN:
 - The verdict MUST be set to "Best kept rare"
